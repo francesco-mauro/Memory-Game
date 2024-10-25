@@ -6,6 +6,9 @@ let hasFlippedCard = false;
 let lockBoard = false;
 let firstCard, secondCard;
 let moves = 0;
+let seconds = 0;
+let timerInterval;
+
 
 
 shuffle(cardValues);
@@ -34,9 +37,21 @@ cardValues.forEach(num => {
     gameBoard.appendChild(card);
 });
 
+function startTimer() {
+    timerInterval = setInterval(() => {
+        seconds++;
+        document.getElementById('timer').textContent = seconds;
+    }, 1000);
+}
+
+
 function flipCard() {
     if (lockBoard) return;
     if (this === firstCard) return;
+
+    if (seconds === 0 && !timerInterval) {
+        startTimer();
+    }
 
     this.classList.add('flip');
 

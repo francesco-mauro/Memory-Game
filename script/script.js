@@ -9,33 +9,34 @@ let moves = 0;
 let seconds = 0;
 let timerInterval;
 
-
-
 shuffle(cardValues);
+createCards();
 
-cardValues.forEach(num => {
-    const card = document.createElement('div');
-    card.classList.add('card');
-    card.dataset.value = num;
+function createCards() {
+    cardValues.forEach(num => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.value = num;
 
-    const cardInner = document.createElement('div');
-    cardInner.classList.add('card-inner');
+        const cardInner = document.createElement('div');
+        cardInner.classList.add('card-inner');
 
-    const cardFront = document.createElement('div');
-    cardFront.classList.add('card-front');
+        const cardFront = document.createElement('div');
+        cardFront.classList.add('card-front');
 
-    const cardBack = document.createElement('div');
-    cardBack.classList.add('card-back');
-    cardBack.textContent = num;
+        const cardBack = document.createElement('div');
+        cardBack.classList.add('card-back');
+        cardBack.textContent = num;
 
-    cardInner.appendChild(cardFront);
-    cardInner.appendChild(cardBack);
-    card.appendChild(cardInner);
+        cardInner.appendChild(cardFront);
+        cardInner.appendChild(cardBack);
+        card.appendChild(cardInner);
 
-    card.addEventListener('click', flipCard);
+        card.addEventListener('click', flipCard);
 
-    gameBoard.appendChild(card);
-});
+        gameBoard.appendChild(card);
+    });
+}
 
 function startTimer() {
     timerInterval = setInterval(() => {
@@ -43,7 +44,6 @@ function startTimer() {
         document.getElementById('timer').textContent = seconds;
     }, 1000);
 }
-
 
 function flipCard() {
     if (lockBoard) return;
@@ -78,6 +78,10 @@ function disableCards() {
     firstCard.removeEventListener('click', flipCard);
     secondCard.removeEventListener('click', flipCard);
 
+    if (document.querySelectorAll('.card:not(.flip)').length === 0) {
+        endGame();
+    }
+
     resetBoard();
 }
 
@@ -98,4 +102,31 @@ function resetBoard() {
 
 function shuffle(array) {
     array.sort(() => 0.5 - Math.random());
+}
+
+function endGame() {
+    clearInterval(timerInterval);
+    document.getElementById('final-time').textContent = seconds;
+    document.getElementById('final-moves').textContent = moves;
+    document.getElementById('win-message').style.display = 'block';
+}
+
+function restartGame() {
+    seconds = 0;
+    moves = 0;
+    hasFlippedCard = false;
+    lockBoard = false;
+    firstCard = null;
+    secondCard = null;
+    timerInterval = null;
+    document.getElementById('timer').textContent = seconds;
+    document.getElementById('move-counter').textContent = moves;
+    document.getElementById('win-message').style.display = 'none';
+
+    while (gameBoard.firstChild) {
+        gameBoard.removeChild(gameBoard.firstChild);
+    }
+
+    shuffle(cardValues);
+    createCards();
 }

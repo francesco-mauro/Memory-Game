@@ -10,8 +10,14 @@
     <p>Mosse: <span id="move-counter">0</span></p>
     <p>Tempo: <span id="timer">0</span> secondi</p>
 
-
     <div id="game-board"></div>
+
+    <div id="win-message" style="display: none;">
+        <h2>Complimenti! Hai completato il gioco.</h2>
+        <p>Tempo impiegato: <span id="final-time"></span> secondi</p>
+        <p>Mosse effettuate: <span id="final-moves"></span></p>
+        <button onclick="restartGame()">Ricomincia</button>
+    </div>
 
     <script src="script/script.js"></script>
 </body>

@@ -1,6 +1,6 @@
 const gameBoard = document.getElementById('game-board');
 
-const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+const numbers = [1,2,3,4,5,6,7,8,9,10];
 let cardValues = numbers.concat(numbers);
 let hasFlippedCard = false;
 let lockBoard = false;

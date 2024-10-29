@@ -8,20 +8,21 @@ h1 {
     color: #333;
 }
 
+
 #game-board {
-    width: 640px;
-    margin: 20px auto;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    max-width: 640px;
+    margin: 20px auto;
 }
 
 .card {
-    width: 150px;
-    height: 150px;
-    margin: 10px;
+    width: calc(20% - 16px); 
+    margin: 8px;
     perspective: 1000px;
     cursor: pointer;
+    aspect-ratio: 1 / 1;
 }
 
 .card-inner {

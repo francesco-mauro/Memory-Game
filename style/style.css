@@ -57,3 +57,11 @@ h1 {
     justify-content: center;
     font-size: 2em;
 }
+
+.card-inner {
+    transition: transform 0.5s ease-in-out;
+}
+
+.card.flip .card-inner {
+    transform: rotateY(180deg);
+}

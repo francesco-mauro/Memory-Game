@@ -1,10 +1,29 @@
-Gioco del Memory
-Descrizione
-Il Programma è un'applicazione web interattiva sviluppata con HTML, CSS e JavaScript. L'obiettivo del gioco è trovare tutte le coppie di carte uguali nel minor tempo possibile e con il minor numero di mosse.
+# Gioco del Memory
 
-Funzionalità
-Interfaccia Intuitiva: Un tabellone di gioco dinamico che visualizza le carte coperte.
-Timer: Un cronometro che misura il tempo impiegato dal giocatore.
-Contatore di Mosse: Tiene traccia del numero di mosse effettuate.
-Messaggio di Vittoria: Al completamento del gioco, viene mostrato un messaggio di congratulazioni con il tempo impiegato e le mosse effettuate.
-Riavvio del Gioco: Possibilità di ricominciare una nuova partita cliccando sul pulsante "Ricomincia".
+Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte le coppie di carte uguali nel minor tempo e con meno mosse possibile. Fatto a ottobre 2024.
+
+## Cosa fa
+
+- **Tabellone dinamico:** le carte vengono mescolate e create da JavaScript a ogni partita.
+- **Timer:** parte al primo clic e conta i secondi.
+- **Contatore delle mosse.**
+- **Messaggio di vittoria** con tempo impiegato e mosse fatte.
+- **Ricomincia:** azzera tutto e rimescola le carte.
+
+## Strumenti
+
+HTML, CSS, JavaScript.
+
+## Come provarlo
+
+Scarica il repository e apri `index.html` nel browser.
+
+```bash
+git clone https://github.com/francesco-mauro/Memory-Game.git
+```
+
+## Com'è fatto
+
+- `index.html`: la pagina, con contatori e messaggio di vittoria.
+- `script/script.js`: mescolamento, gestione dei clic, confronto delle coppie, timer e riavvio.
+- `style/style.css`: lo stile del tabellone e delle carte.

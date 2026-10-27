@@ -1,5 +1,7 @@
 # Gioco del Memory
 
+**Prova la demo:** https://francesco-mauro.github.io/Memory-Game/
+
 Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte le coppie di carte uguali nel minor tempo e con meno mosse possibile. Fatto a ottobre 2024.
 
 ## Cosa fa

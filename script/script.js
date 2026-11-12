@@ -23,6 +23,7 @@ document.getElementById('restart').addEventListener('click', restartGame);
 document.getElementById('play-again').addEventListener('click', restartGame);
 gameBoard.addEventListener('keydown', moveFocusWithArrows);
 
+gameBoard.setAttribute('aria-label', `Tabellone, ${cardValues.length} carte`);
 showRecord();
 shuffle(cardValues);
 createCards();
@@ -145,6 +146,8 @@ function endGame() {
 }
 
 function restartGame() {
+    // Da «Gioca ancora» il focus finirebbe nel vuoto: lo portiamo sulla prima carta.
+    const focusWasInWinMessage = winMessage.contains(document.activeElement);
     clearInterval(timerInterval);
     clearTimeout(unflipTimeout);
     timerInterval = null;
@@ -159,6 +162,7 @@ function restartGame() {
 
     shuffle(cardValues);
     createCards();
+    if (focusWasInWinMessage) gameBoard.querySelector('.card').focus();
     announce('Nuova partita');
 }
 
@@ -187,7 +191,7 @@ function announce(text) {
 // Il record resta nel browser di chi gioca. Se il browser non lo permette, il gioco va lo stesso.
 function readRecord() {
     try {
-        return JSON.parse(localStorage.getItem(RECORD_KEY));
+        return parseRecord(localStorage.getItem(RECORD_KEY));
     } catch {
         return null;
     }

@@ -17,7 +17,7 @@ Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte l
 ## Migliorie del 2026
 
 - Il mescolamento ora è quello di Fisher-Yates. Prima usavo `sort(() => 0.5 - Math.random())`, che non è uniforme: in una prova su 200.000 mescolamenti la prima carta restava al primo posto circa l'11,7% delle volte invece del 5%.
-- La pagina si adatta al telefono: quattro carte per riga sotto i 480 pixel.
+- La pagina si adatta al telefono: quattro carte per riga fino a 480 pixel di larghezza.
 - Le carte sono pulsanti, quindi si raggiungono con la tastiera, e un lettore di schermo annuncia le carte girate, le coppie trovate e la vittoria.
 - Ricomincia a metà partita annulla anche il timer e le carte che stanno per rigirarsi.
 - Chi ha chiesto meno animazioni al sistema vede le carte girarsi senza la rotazione.

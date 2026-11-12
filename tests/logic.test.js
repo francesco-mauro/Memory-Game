@@ -1,7 +1,7 @@
-// Test della logica del gioco. Si lanciano con: node --test tests/
+// Test della logica del gioco. Si lanciano dalla cartella del progetto con: node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { createDeck, shuffle, isBetterRecord } = require('../script/logic.js');
+const { createDeck, shuffle, isBetterRecord, parseRecord } = require('../script/logic.js');
 
 test('il mazzo ha ogni numero due volte', () => {
     const deck = createDeck(10);
@@ -39,4 +39,13 @@ test('il record: vince chi fa meno mosse, a parità di mosse meno tempo', () => 
     assert.strictEqual(isBetterRecord({ moves: 14, seconds: 20 }, { moves: 12, seconds: 40 }), false);
     assert.strictEqual(isBetterRecord({ moves: 12, seconds: 30 }, { moves: 12, seconds: 40 }), true);
     assert.strictEqual(isBetterRecord({ moves: 12, seconds: 40 }, { moves: 12, seconds: 40 }), false);
+});
+
+test('un record salvato rotto non conta, uno valido sì', () => {
+    assert.deepStrictEqual(parseRecord('{"moves":12,"seconds":40}'), { moves: 12, seconds: 40 });
+    assert.strictEqual(parseRecord(null), null);
+    assert.strictEqual(parseRecord('{}'), null);
+    assert.strictEqual(parseRecord('5'), null);
+    assert.strictEqual(parseRecord('{"moves":"12","seconds":40}'), null);
+    assert.strictEqual(parseRecord('non è json'), null);
 });

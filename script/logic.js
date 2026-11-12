@@ -23,6 +23,19 @@ function isBetterRecord(result, record) {
     return result.seconds < record.seconds;
 }
 
+// Il record letto dal browser: vale solo se ha mosse e secondi numerici, altrimenti è come non averlo.
+function parseRecord(text) {
+    try {
+        const record = JSON.parse(text);
+        if (record && Number.isFinite(record.moves) && Number.isFinite(record.seconds)) {
+            return { moves: record.moves, seconds: record.seconds };
+        }
+    } catch {
+        // testo non valido
+    }
+    return null;
+}
+
 if (typeof module !== 'undefined') {
-    module.exports = { createDeck, shuffle, isBetterRecord };
+    module.exports = { createDeck, shuffle, isBetterRecord, parseRecord };
 }

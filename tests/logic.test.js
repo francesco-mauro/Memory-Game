@@ -1,7 +1,7 @@
 // Test della logica del gioco. Si lanciano dalla cartella del progetto con: node --test
 const test = require('node:test');
 const assert = require('node:assert');
-const { createDeck, shuffle, isBetterRecord, parseRecord } = require('../script/logic.js');
+const { createDeck, shuffle, isBetterRecord, parseRecord, FIGURES, recordNote } = require('../script/logic.js');
 
 test('il mazzo ha ogni numero due volte', () => {
     const deck = createDeck(10);
@@ -48,4 +48,20 @@ test('un record salvato rotto non conta, uno valido sì', () => {
     assert.strictEqual(parseRecord('5'), null);
     assert.strictEqual(parseRecord('{"moves":"12","seconds":40}'), null);
     assert.strictEqual(parseRecord('non è json'), null);
+});
+
+test('le figure sono 10, con nomi diversi e un disegno ciascuna', () => {
+    assert.strictEqual(FIGURES.length, 10);
+    assert.strictEqual(new Set(FIGURES.map(f => f.name)).size, 10);
+    for (const f of FIGURES) {
+        assert.match(f.path, /^M/);
+        assert.ok(f.stroke >= 3 && f.stroke <= 5);
+    }
+});
+
+test('il messaggio sotto il risultato dice com\'è andata col record', () => {
+    assert.strictEqual(recordNote({ moves: 21, seconds: 58 }, { moves: 24, seconds: 70 }), 'Il record precedente era 24 mosse.');
+    assert.strictEqual(recordNote({ moves: 27, seconds: 64 }, { moves: 18, seconds: 50 }), 'Il tuo record resta 18 mosse.');
+    assert.strictEqual(recordNote({ moves: 12, seconds: 40 }, null), 'È la tua prima partita: questo è il record da battere.');
+    assert.strictEqual(recordNote({ moves: 18, seconds: 40 }, { moves: 18, seconds: 50 }), 'Il record precedente era 18 mosse in 50 secondi.');
 });

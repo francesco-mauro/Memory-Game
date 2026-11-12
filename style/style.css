@@ -2,34 +2,75 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
     background-color: #f0f0f0;
+    margin: 0;
+    padding: 0 16px 24px;
 }
 
 h1 {
     color: #333;
 }
 
-
-#game-board {
+.stats {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
+    gap: 4px 24px;
+}
+
+.stats p {
+    margin: 4px 0;
+}
+
+button {
+    font: inherit;
+}
+
+#restart,
+#play-again {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #2e3d49;
+    color: #fff;
+    cursor: pointer;
+}
+
+#game-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
     max-width: 640px;
     margin: 20px auto;
 }
 
 .card {
-    width: calc(20% - 16px); 
-    margin: 8px;
+    padding: 0;
+    border: none;
+    background: none;
     perspective: 1000px;
     cursor: pointer;
     aspect-ratio: 1 / 1;
+    border-radius: 10px;
+}
+
+.card:focus-visible,
+#restart:focus-visible,
+#play-again:focus-visible {
+    outline: 3px solid #f2a541;
+    outline-offset: 3px;
+}
+
+.card.matched {
+    cursor: default;
 }
 
 .card-inner {
+    display: block;
     position: relative;
     width: 100%;
     height: 100%;
-    transition: transform 0.6s;
+    transition: transform 0.5s ease-in-out;
     transform-style: preserve-3d;
 }
 
@@ -37,10 +78,10 @@ h1 {
     transform: rotateY(180deg);
 }
 
-.card-front, .card-back {
+.card-front,
+.card-back {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     backface-visibility: hidden;
     border-radius: 10px;
 }
@@ -56,13 +97,38 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2em;
+    font-size: clamp(1.4em, 6vw, 2em);
 }
 
-.card-inner {
-    transition: transform 0.5s ease-in-out;
+.card.matched .card-back {
+    box-shadow: inset 0 0 0 3px #3a9d5d;
 }
 
-.card.flip .card-inner {
-    transform: rotateY(180deg);
+#win-message {
+    margin-top: 8px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* Telefono: quattro carte per riga, più grandi da toccare. */
+@media (max-width: 480px) {
+    #game-board {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+}
+
+/* Chi ha chiesto meno animazioni al sistema: la carta si gira senza ruotare. */
+@media (prefers-reduced-motion: reduce) {
+    .card-inner {
+        transition: none;
+    }
 }

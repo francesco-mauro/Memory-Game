@@ -1,32 +1,83 @@
-// Il gioco nella pagina. La logica pura (mazzo, mescolamento, record) sta in logic.js.
+// Il gioco nella pagina. La logica pura (mazzo, mescolamento, record, figure) sta in logic.js.
+// Contenuti: stato e avvio, creazione delle carte, giro di una carta, coppia trovata e sbagliata,
+// fine partita (onda, messaggio, numeri che contano), riavvio, frecce della tastiera, record nel browser.
 const PAIRS = 10;
 const RECORD_KEY = 'memory-game-record';
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const gameBoard = document.getElementById('game-board');
+const topbar = document.querySelector('.topbar');
 const moveCounter = document.getElementById('move-counter');
 const timerDisplay = document.getElementById('timer');
 const recordDisplay = document.getElementById('record');
+const recordUnit = document.getElementById('record-unit');
 const announcer = document.getElementById('announcer');
 const winMessage = document.getElementById('win-message');
+const playAgain = document.getElementById('play-again');
 
 let cardValues = createDeck(PAIRS);
-let hasFlippedCard = false;
-let lockBoard = false;
 let firstCard = null;
 let secondCard = null;
+let wrongPair = null;
+let wrongTimers = [];
 let moves = 0;
 let seconds = 0;
 let timerInterval = null;
-let unflipTimeout = null;
+let countFrame = null;
+const timers = new Set();
 
 document.getElementById('restart').addEventListener('click', restartGame);
-document.getElementById('play-again').addEventListener('click', restartGame);
+playAgain.addEventListener('click', restartGame);
 gameBoard.addEventListener('keydown', moveFocusWithArrows);
 
 gameBoard.setAttribute('aria-label', `Tabellone, ${cardValues.length} carte`);
 showRecord();
 shuffle(cardValues);
 createCards();
+
+// Chi ha chiesto meno animazioni al sistema: tempi più brevi, niente attese per le rotazioni.
+function reducedMotion() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// setTimeout che si ricorda di sé, così Ricomincia può fermare tutto quello che è in sospeso.
+function schedule(fn, ms) {
+    const id = setTimeout(() => {
+        timers.delete(id);
+        fn();
+    }, ms);
+    timers.add(id);
+    return id;
+}
+
+function figureOf(card) {
+    return FIGURES[Number(card.dataset.value) - 1];
+}
+
+function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function createFigure(figure) {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 48 48');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.classList.add('figure', `tone-${figure.tone}`);
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('d', figure.path);
+    path.setAttribute('stroke-width', figure.stroke);
+    if (figure.rotate) path.setAttribute('transform', `rotate(${figure.rotate} 24 24)`);
+    svg.appendChild(path);
+    return svg;
+}
+
+function createBadge(kind) {
+    const badge = document.createElement('span');
+    badge.classList.add('badge', `badge-${kind}`);
+    const d = kind === 'ok' ? 'M2 6.2 4.8 9 10 3' : 'M3 3l6 6M9 3 3 9';
+    badge.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    return badge;
+}
 
 function createCards() {
     cardValues.forEach((num, index) => {
@@ -35,26 +86,40 @@ function createCards() {
         card.classList.add('card');
         card.dataset.value = num;
         card.dataset.index = index;
-        card.setAttribute('aria-label', `Carta ${index + 1}, coperta`);
+        setCardLabel(card, 'coperta');
 
         const cardInner = document.createElement('span');
         cardInner.classList.add('card-inner');
 
         const cardFront = document.createElement('span');
         cardFront.classList.add('card-front');
+        const dot = document.createElement('span');
+        dot.classList.add('card-dot');
+        cardFront.appendChild(dot);
 
         const cardBack = document.createElement('span');
         cardBack.classList.add('card-back');
-        cardBack.textContent = num;
+        cardBack.appendChild(createFigure(FIGURES[num - 1]));
+        const ring = document.createElementNS(SVG_NS, 'svg');
+        ring.classList.add('card-ring');
+        ring.setAttribute('aria-hidden', 'true');
+        // Il bordo della carta trovata: un rettangolo sul filo della carta che si disegna da solo.
+        const rect = document.createElementNS(SVG_NS, 'rect');
+        [['x', 0], ['y', 0], ['width', '100%'], ['height', '100%'], ['rx', 14], ['pathLength', 1]]
+            .forEach(([name, value]) => rect.setAttribute(name, value));
+        ring.appendChild(rect);
+        cardBack.append(ring, createBadge('ok'), createBadge('wrong'));
 
-        cardInner.appendChild(cardFront);
-        cardInner.appendChild(cardBack);
+        cardInner.append(cardFront, cardBack);
         card.appendChild(cardInner);
-
         card.addEventListener('click', flipCard);
 
         gameBoard.appendChild(card);
     });
+}
+
+function setCardLabel(card, state) {
+    card.setAttribute('aria-label', `Carta ${Number(card.dataset.index) + 1}, ${state}`);
 }
 
 function startTimer() {
@@ -65,21 +130,25 @@ function startTimer() {
 }
 
 function flipCard() {
-    if (lockBoard) return;
+    // Un clic durante l'attesa della coppia sbagliata la chiude subito: chi gioca veloce non aspetta.
+    if (wrongPair) {
+        const clickedThePair = wrongPair.includes(this);
+        closeWrongPair();
+        if (clickedThePair) return;
+    }
     if (this === firstCard) return;
-    if (this.classList.contains('matched')) return;
+    if (this.dataset.matched) return;
 
     if (timerInterval === null) {
         startTimer();
     }
 
     this.classList.add('flip');
-    this.setAttribute('aria-label', `Carta ${Number(this.dataset.index) + 1}, ${this.dataset.value}`);
+    setCardLabel(this, figureOf(this).name);
 
-    if (!hasFlippedCard) {
-        hasFlippedCard = true;
+    if (!firstCard) {
         firstCard = this;
-        announce(`Hai girato un ${this.dataset.value}`);
+        announce(`Hai girato: ${figureOf(this).name}`);
         return;
     }
 
@@ -87,76 +156,154 @@ function flipCard() {
     moves++;
     moveCounter.textContent = moves;
 
-    checkForMatch();
+    firstCard.dataset.value === secondCard.dataset.value ? pairFound() : pairWrong();
 }
 
-function checkForMatch() {
-    const isMatch = firstCard.dataset.value === secondCard.dataset.value;
-
-    isMatch ? disableCards() : unflipCards();
-}
-
-function disableCards() {
-    [firstCard, secondCard].forEach(card => {
-        card.classList.add('matched');
+function pairFound() {
+    const pair = [firstCard, secondCard];
+    const name = figureOf(firstCard).name;
+    pair.forEach(card => {
+        card.dataset.matched = 'true';
         card.setAttribute('aria-disabled', 'true');
+        setCardLabel(card, `${name}, coppia trovata`);
     });
-    announce(`Coppia di ${firstCard.dataset.value} trovata`);
-
+    announce(`Coppia trovata: ${name}`);
     resetBoard();
 
-    if (document.querySelectorAll('.card:not(.matched)').length === 0) {
-        endGame();
+    // Il negativo parte quando la seconda carta ha finito di girarsi; la seconda segue di 60 ms.
+    schedule(() => {
+        pair[1].style.setProperty('--match-delay', '60ms');
+        pair.forEach(card => card.classList.add('matched'));
+    }, reducedMotion() ? 0 : 440);
+
+    if (gameBoard.querySelectorAll('.card:not([data-matched])').length === 0) {
+        clearInterval(timerInterval);
+        schedule(endGame, reducedMotion() ? 120 : 1060);
     }
 }
 
-function unflipCards() {
-    lockBoard = true;
-    announce(`${secondCard.dataset.value}: non è una coppia`);
+function pairWrong() {
+    const pair = [firstCard, secondCard];
+    wrongPair = pair;
+    pair[0].style.setProperty('--tilt', '-1');
+    pair[1].style.setProperty('--tilt', '1');
+    announce(`${capitalize(figureOf(pair[0]).name)} e ${figureOf(pair[1]).name}, non sono una coppia`);
 
-    unflipTimeout = setTimeout(() => {
-        [firstCard, secondCard].forEach(card => {
-            card.classList.remove('flip');
-            card.setAttribute('aria-label', `Carta ${Number(card.dataset.index) + 1}, coperta`);
-        });
+    const reduce = reducedMotion();
+    // Prima si vede la figura, poi il segnale e la scossa, poi le carte si richiudono.
+    wrongTimers = [
+        schedule(() => pair.forEach(card => card.classList.add('wrong')), reduce ? 120 : 440),
+        schedule(closeWrongPair, reduce ? 1020 : 1140),
+    ];
+}
 
-        resetBoard();
-    }, 1000);
+function closeWrongPair() {
+    if (!wrongPair) return;
+    // Solo i tempi di questa coppia: quelli di una coppia trovata poco prima devono arrivare.
+    wrongTimers.forEach(id => {
+        clearTimeout(id);
+        timers.delete(id);
+    });
+    wrongTimers = [];
+    wrongPair.forEach(card => {
+        card.classList.remove('flip', 'wrong');
+        setCardLabel(card, 'coperta');
+    });
+    wrongPair = null;
+    resetBoard();
 }
 
 function resetBoard() {
-    [hasFlippedCard, lockBoard, firstCard, secondCard] = [false, false, null, null];
-    unflipTimeout = null;
+    firstCard = null;
+    secondCard = null;
 }
 
 function endGame() {
-    clearInterval(timerInterval);
-    document.getElementById('final-time').textContent = seconds;
-    document.getElementById('final-moves').textContent = moves;
-
     const result = { moves, seconds };
-    const isRecord = isBetterRecord(result, readRecord());
+    const previous = readRecord();
+    const isRecord = isBetterRecord(result, previous);
     if (isRecord) saveRecord(result);
-    document.getElementById('new-record').hidden = !isRecord;
     showRecord();
 
-    winMessage.hidden = false;
-    announce(`Hai vinto in ${moves} mosse e ${seconds} secondi${isRecord ? ', nuovo record' : ''}`);
-    document.getElementById('play-again').focus();
+    const reduce = reducedMotion();
+    const finalTime = document.getElementById('final-time');
+    const finalMoves = document.getElementById('final-moves');
+    const tag = document.getElementById('new-record');
+    document.getElementById('moves-box').classList.toggle('is-record', isRecord);
+    document.getElementById('record-note').textContent = recordNote(result, previous);
+    tag.hidden = true;
+    tag.classList.remove('pop');
+
+    if (!reduce) startWave();
+
+    schedule(() => {
+        finalTime.textContent = reduce ? seconds : 0;
+        finalMoves.textContent = reduce ? moves : 0;
+        topbar.inert = true;
+        gameBoard.inert = true;
+        winMessage.hidden = false;
+        if (reduce) {
+            tag.hidden = !isRecord;
+            playAgain.focus();
+        }
+    }, reduce ? 0 : 500);
+
+    if (!reduce) {
+        schedule(() => playAgain.focus(), 880);
+        schedule(() => countUp([[finalTime, seconds], [finalMoves, moves]], 600), 760);
+        if (isRecord) schedule(() => {
+            tag.hidden = false;
+            tag.classList.add('pop');
+        }, 1360);
+    }
+
+    announce(`Partita finita in ${moves} mosse e ${seconds} secondi${isRecord ? ', nuovo record' : ''}`);
+}
+
+// L'onda: ogni carta si gonfia un attimo, con un ritardo che cresce lungo la diagonale.
+function startWave() {
+    const columns = getComputedStyle(gameBoard).gridTemplateColumns.split(' ').length;
+    gameBoard.querySelectorAll('.card').forEach((card, i) => {
+        card.style.setProperty('--d', Math.floor(i / columns) + (i % columns));
+    });
+    gameBoard.classList.remove('wave');
+    void gameBoard.offsetWidth;
+    gameBoard.classList.add('wave');
+}
+
+// Tempo e mosse contano da 0 al valore finale.
+function countUp(pairs, duration) {
+    const start = performance.now();
+    const step = now => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        pairs.forEach(([el, target]) => {
+            el.textContent = Math.round(target * eased);
+        });
+        countFrame = t < 1 ? requestAnimationFrame(step) : null;
+    };
+    countFrame = requestAnimationFrame(step);
 }
 
 function restartGame() {
     // Da «Gioca ancora» il focus finirebbe nel vuoto: lo portiamo sulla prima carta.
     const focusWasInWinMessage = winMessage.contains(document.activeElement);
     clearInterval(timerInterval);
-    clearTimeout(unflipTimeout);
+    timers.forEach(id => clearTimeout(id));
+    timers.clear();
+    cancelAnimationFrame(countFrame);
     timerInterval = null;
+    wrongPair = null;
+    wrongTimers = [];
     seconds = 0;
     moves = 0;
     resetBoard();
     timerDisplay.textContent = seconds;
     moveCounter.textContent = moves;
     winMessage.hidden = true;
+    topbar.inert = false;
+    gameBoard.inert = false;
+    gameBoard.classList.remove('wave');
 
     gameBoard.replaceChildren();
 
@@ -207,5 +354,7 @@ function saveRecord(record) {
 
 function showRecord() {
     const record = readRecord();
-    recordDisplay.textContent = record ? `${record.moves} mosse, ${record.seconds} secondi` : 'nessuno';
+    recordDisplay.textContent = record ? record.moves : '–';
+    recordUnit.textContent = record ? 'mosse' : '';
+    recordDisplay.parentElement.title = record ? `${record.moves} mosse in ${record.seconds} secondi` : 'Nessun record';
 }

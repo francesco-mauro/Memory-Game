@@ -1,111 +1,558 @@
+/*
+ * Memory, stile «Notturno» (novembre 2026).
+ * Contenuti:
+ * - variabili di colore: tema scuro predefinito, tema chiaro con prefers-color-scheme
+ * - pagina, barra in alto, contatori e pulsanti
+ * - tabellone e carta: dorso, faccia, figure, mouse sopra, focus
+ * - stati: girata, trovata, coppia sbagliata
+ * - fine partita: onda sul tabellone, velo, messaggio, etichetta del record
+ * - telefono (fino a 480 px)
+ * - movimento ridotto
+ */
+
+:root {
+    --fondo: #111318;
+    --superficie: #1A1D25;
+    --superficie-bordo: #2A2F3D;
+    --dorso: #2A3042;
+    --dorso-trama: #353C55;
+    --dorso-bordo: #5C6690;
+    --dorso-hover: #323A50;
+    --dorso-trama-hover: #3E4762;
+    --dorso-bordo-hover: #8C97C4;
+    --faccia: #F2EEE5;
+    --faccia-bordo: transparent;
+    --figura-a: #1B1E27;
+    --figura-b: #D9472B;
+    --testo: #EDEBE5;
+    --testo-2: #9EA3B0;
+    --accento: #C5F06A;
+    --accento-testo: #111318;
+    --punto: #C5F06A;
+    --trovata: #18231A;
+    --trovata-segno: #C5F06A;
+    --errore: #E8603F;
+    --focus: #7FC8FF;
+    --velo: rgba(10, 11, 15, 0.74);
+    --ombra: rgba(0, 0, 0, 0.55);
+
+    --font-titoli: 'Unbounded', system-ui, sans-serif;
+    --font-testo: 'Manrope', system-ui, sans-serif;
+    --curva-giro: cubic-bezier(.3, 1.25, .5, 1);
+    --curva-esce: cubic-bezier(.2, .8, .2, 1);
+    --curva-piana: cubic-bezier(.4, 0, .2, 1);
+    --curva-rimbalzo: cubic-bezier(.3, 1.6, .5, 1);
+}
+
+/* Tema chiaro: il dorso resta scuro, è il segno di riconoscimento del gioco. */
+@media (prefers-color-scheme: light) {
+    :root {
+        --fondo: #EEECE6;
+        --superficie: #FFFFFF;
+        --superficie-bordo: #D6D3CA;
+        --dorso-hover: #343B52;
+        --dorso-bordo: #1B1E27;
+        --dorso-bordo-hover: #111318;
+        --faccia: #FFFFFF;
+        --faccia-bordo: #7A776E;
+        --testo: #16181F;
+        --testo-2: #5A5F6C;
+        --accento: #1B1E27;
+        --accento-testo: #C5F06A;
+        --errore: #C2391E;
+        --focus: #0B5CC2;
+        --velo: rgba(238, 236, 230, 0.82);
+        --ombra: rgba(27, 30, 39, 0.22);
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #f0f0f0;
     margin: 0;
-    padding: 0 16px 24px;
-}
-
-h1 {
-    color: #333;
-}
-
-.stats {
+    min-height: 100vh;
+    padding: 32px 64px 40px;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 4px 24px;
-}
-
-.stats p {
-    margin: 4px 0;
+    gap: 52px;
+    background: var(--fondo);
+    color: var(--testo);
+    font-family: var(--font-testo);
+    -webkit-font-smoothing: antialiased;
 }
 
 button {
     font: inherit;
+    color: inherit;
 }
 
-#restart,
-#play-again {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    background-color: #2e3d49;
-    color: #fff;
-    cursor: pointer;
-}
-
-#game-board {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-    max-width: 640px;
-    margin: 20px auto;
-}
-
-.card {
-    padding: 0;
-    border: none;
-    background: none;
-    perspective: 1000px;
-    cursor: pointer;
-    aspect-ratio: 1 / 1;
-    border-radius: 10px;
-}
-
-.card:focus-visible,
-#restart:focus-visible,
-#play-again:focus-visible {
-    outline: 3px solid #f2a541;
+:focus-visible {
+    outline: 3px solid var(--focus);
     outline-offset: 3px;
 }
 
-.card.matched {
-    cursor: default;
+/* Barra in alto */
+.topbar {
+    width: 100%;
+    max-width: 1152px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 12px 12px 12px 28px;
+    background: var(--superficie);
+    border: 1px solid var(--superficie-bordo);
+    border-radius: 20px;
+}
+
+h1 {
+    margin: 0;
+    font-family: var(--font-titoli);
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 32px;
+}
+
+.stats {
+    margin: 0;
+    display: flex;
+    gap: 10px;
+}
+
+.stat {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 20px;
+    background: var(--fondo);
+    border-radius: 12px;
+}
+
+.stat dt,
+.label,
+.win-stat dt {
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--testo-2);
+}
+
+.stat dd,
+.win-stat dd {
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.stat-value {
+    font-family: var(--font-titoli);
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 28px;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--testo-2);
+}
+
+.button {
+    height: 52px;
+    padding: 0 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: none;
+    border-radius: 12px;
+    background: var(--accento);
+    color: var(--accento-testo);
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 80ms var(--curva-esce), filter 120ms ease-out;
+}
+
+.button:hover {
+    filter: brightness(1.06);
+}
+
+.button:active {
+    transform: scale(.97);
+}
+
+/* Tabellone */
+.board {
+    width: 100%;
+    max-width: 656px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.card {
+    position: relative;
+    padding: 0;
+    border: none;
+    background: none;
+    aspect-ratio: 120 / 136;
+    border-radius: 14px;
+    perspective: 900px;
+    cursor: pointer;
+    transition: transform 80ms cubic-bezier(0, 0, .2, 1);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.card:active:not(.flip) {
+    transform: scale(.97);
 }
 
 .card-inner {
-    display: block;
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.5s ease-in-out;
+    position: absolute;
+    inset: 0;
     transform-style: preserve-3d;
-}
-
-.card.flip .card-inner {
-    transform: rotateY(180deg);
+    transition: transform 440ms var(--curva-giro);
 }
 
 .card-front,
 .card-back {
     position: absolute;
     inset: 0;
+    border-radius: inherit;
+    border-radius: 14px;
     backface-visibility: hidden;
-    border-radius: 10px;
-}
-
-.card-front {
-    background-color: #2e3d49;
-}
-
-.card-back {
-    background-color: #fff;
-    color: #000;
-    transform: rotateY(180deg);
+    -webkit-backface-visibility: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: clamp(1.4em, 6vw, 2em);
+}
+
+/* Dorso: righe diagonali e un punto lime al centro */
+.card-front {
+    border: 1.5px solid var(--dorso-bordo);
+    background-color: var(--dorso);
+    background-image: repeating-linear-gradient(135deg, var(--dorso-trama) 0 2px, transparent 2px 9px);
+    transition: background-color 160ms ease-out, border-color 160ms ease-out;
+}
+
+.card-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--punto);
+    box-shadow: 0 0 0 0 rgba(197, 240, 106, 0);
+    transition: transform 160ms var(--curva-esce), box-shadow 160ms ease-out;
+}
+
+/* Faccia: carta avorio con la figura */
+.card-back {
+    transform: rotateY(180deg);
+    background: var(--faccia);
+    box-shadow: inset 0 0 0 1.5px var(--faccia-bordo);
+    transition: background-color 240ms var(--curva-piana), box-shadow 300ms var(--curva-esce);
+}
+
+.figure {
+    width: 50%;
+    height: auto;
+    overflow: visible;
+}
+
+.figure path {
+    fill: none;
+    stroke: var(--figura-a);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 240ms var(--curva-piana);
+}
+
+.figure.tone-b path {
+    stroke: var(--figura-b);
+}
+
+.card:focus-visible {
+    outline-offset: 3px;
+}
+
+/* Mouse sopra, solo dove il mouse c'è davvero */
+@media (hover: hover) {
+    .card:not(.flip):hover .card-inner {
+        transform: translateY(-4px);
+    }
+
+    .card:not(.flip):hover .card-front {
+        background-color: var(--dorso-hover);
+        background-image: repeating-linear-gradient(135deg, var(--dorso-trama-hover) 0 2px, transparent 2px 9px);
+        border-color: var(--dorso-bordo-hover);
+    }
+
+    .card:not(.flip):hover .card-dot {
+        transform: scale(1.6);
+        box-shadow: 0 0 0 5px rgba(197, 240, 106, 0.18);
+    }
+}
+
+/* Girata: si solleva e ruota */
+.card.flip {
+    cursor: default;
+}
+
+.card.flip .card-inner {
+    transform: translateY(-6px) rotateY(180deg);
+}
+
+.card.flip .card-back {
+    box-shadow: inset 0 0 0 1.5px var(--faccia-bordo), 0 16px 30px var(--ombra);
+}
+
+/* Trovata: in negativo, appoggiata, bordo che si disegna e bollino con la spunta */
+.card.matched .card-inner {
+    transform: rotateY(180deg);
+    transition: transform 240ms var(--curva-piana) calc(80ms + var(--match-delay, 0ms));
 }
 
 .card.matched .card-back {
-    box-shadow: inset 0 0 0 3px #3a9d5d;
+    background: var(--trovata);
+    box-shadow: none;
+    transition-delay: calc(80ms + var(--match-delay, 0ms));
 }
 
-#win-message {
-    margin-top: 8px;
+.card.matched .figure path {
+    stroke: var(--trovata-segno);
+    transition-delay: calc(80ms + var(--match-delay, 0ms));
+}
+
+.card-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.card-ring rect {
+    fill: none;
+    stroke: var(--trovata-segno);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+}
+
+.card.matched .card-ring rect {
+    opacity: 1;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 360ms var(--curva-esce) calc(200ms + var(--match-delay, 0ms)), opacity 1ms linear calc(200ms + var(--match-delay, 0ms));
+}
+
+.badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111318;
+    transform: scale(0);
+    pointer-events: none;
+}
+
+.badge-ok {
+    background: var(--trovata-segno);
+}
+
+.badge-wrong {
+    background: var(--errore);
+}
+
+.card.matched .badge-ok {
+    transform: scale(1);
+    transition: transform 180ms var(--curva-rimbalzo) calc(440ms + var(--match-delay, 0ms));
+}
+
+/* Coppia sbagliata: contorno corallo, bollino con la ×, una scossa */
+.card.wrong .card-back {
+    outline: 3px solid var(--errore);
+    outline-offset: 2px;
+}
+
+.card.wrong .badge-wrong {
+    transform: scale(1);
+    transition: transform 120ms ease-out;
+}
+
+.card.wrong {
+    animation: shake 300ms cubic-bezier(.36, .07, .19, .97) 120ms both;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(-4px) rotate(calc(var(--tilt, 1) * -2deg)); }
+    40% { transform: translateX(4px) rotate(calc(var(--tilt, 1) * 2deg)); }
+    60% { transform: translateX(-3px) rotate(calc(var(--tilt, 1) * -2deg)); }
+    80% { transform: translateX(3px) rotate(calc(var(--tilt, 1) * 2deg)); }
+}
+
+/* Fine partita: l'onda attraversa il tabellone in diagonale */
+.board.wave .card {
+    animation: wave 320ms cubic-bezier(.3, 1.4, .5, 1) calc(var(--d, 0) * 40ms) both;
+}
+
+@keyframes wave {
+    50% { transform: scale(1.06); }
+}
+
+.veil {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--velo);
+    animation: fade-in 240ms ease-out both;
+}
+
+.veil[hidden] {
+    display: none;
+}
+
+.win {
+    width: 100%;
+    max-width: 520px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    background: var(--superficie);
+    border: 1px solid var(--superficie-bordo);
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    animation: rise 320ms var(--curva-esce) 60ms both;
+}
+
+.win-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.win h2 {
+    margin: 0;
+    font-family: var(--font-titoli);
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 34px;
+    text-wrap: pretty;
+}
+
+.win-stats {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.win-stat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 20px;
+    background: var(--fondo);
+    border: 2px solid var(--fondo);
+    border-radius: 16px;
+}
+
+.win-stat.is-record {
+    border-color: var(--trovata-segno);
+}
+
+.win-value {
+    font-family: var(--font-titoli);
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 44px;
+    font-variant-numeric: tabular-nums;
+}
+
+.record-tag {
+    position: absolute;
+    top: -13px;
+    right: 14px;
+    height: 26px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    background: var(--trovata-segno);
+    color: #111318;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.record-tag[hidden] {
+    display: none;
+}
+
+.record-tag.pop {
+    animation: pop 220ms var(--curva-rimbalzo) both;
+}
+
+.record-tag.pop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid var(--trovata-segno);
+    animation: ring 500ms var(--curva-esce) both;
+    pointer-events: none;
+}
+
+.win-note {
+    margin: -8px 0 0;
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--testo-2);
+}
+
+.button-wide {
+    width: 100%;
+    height: 56px;
+    border-radius: 14px;
+    font-size: 16px;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+}
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+}
+
+@keyframes pop {
+    from { transform: scale(.8); }
+}
+
+@keyframes ring {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(1.5, 1.9); opacity: 0; }
 }
 
 .visually-hidden {
@@ -118,17 +565,199 @@ button {
     white-space: nowrap;
 }
 
-/* Telefono: quattro carte per riga, più grandi da toccare. */
+/* Telefono: titolo e Ricomincia in un riquadro, i contatori sotto, quattro carte per riga */
 @media (max-width: 480px) {
-    #game-board {
-        grid-template-columns: repeat(4, 1fr);
+    body {
+        padding: 24px 16px;
+        gap: 32px;
+    }
+
+    .topbar {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas: "titolo pulsante" "contatori contatori";
+        gap: 14px 12px;
+        padding: 0;
+        background: none;
+        border: none;
+    }
+
+    /* il riquadro scuro sta solo dietro la prima riga */
+    .topbar::before {
+        content: '';
+        grid-area: 1 / 1 / 2 / 3;
+        align-self: stretch;
+        background: var(--superficie);
+        border: 1px solid var(--superficie-bordo);
+        border-radius: 16px;
+    }
+
+    h1 {
+        grid-area: titolo;
+        padding-left: 18px;
+        font-size: 20px;
+        line-height: 26px;
+        align-self: center;
+    }
+
+    #restart {
+        grid-area: pulsante;
+        height: 44px;
+        margin: 8px;
+        padding: 0 16px;
+        gap: 8px;
+        border-radius: 10px;
+    }
+
+    .stats {
+        grid-area: contatori;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .stat {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        padding: 10px 14px;
+        background: var(--superficie);
+    }
+
+    .stat-value {
+        font-size: 17px;
+        line-height: 22px;
+    }
+
+    .stat-unit {
+        font-size: 13px;
+    }
+
+    .board {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 10px;
+    }
+
+    .card,
+    .card-front,
+    .card-back {
+        border-radius: 12px;
+    }
+
+    .card-ring rect {
+        rx: 12px;
+    }
+
+    .card.flip .card-inner {
+        transform: translateY(-4px) rotateY(180deg);
+    }
+
+    .card.flip .card-back {
+        box-shadow: inset 0 0 0 1.5px var(--faccia-bordo), 0 10px 20px var(--ombra);
+    }
+
+    .figure {
+        width: 54%;
+    }
+
+    .badge {
+        top: 5px;
+        right: 5px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .veil {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .win {
+        max-width: none;
+        padding: 28px 20px 32px;
+        gap: 22px;
+        border-width: 1px 0 0;
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .win h2 {
+        font-size: 20px;
+        line-height: 28px;
+    }
+
+    .win-stat {
+        gap: 4px;
+        padding: 14px 16px;
+        border-radius: 14px;
+    }
+
+    .win-value {
+        font-size: 30px;
+        line-height: 36px;
+    }
+
+    .button-wide {
+        height: 52px;
     }
 }
 
-/* Chi ha chiesto meno animazioni al sistema: la carta si gira senza ruotare. */
+/* Movimento ridotto: niente rotazioni, scosse, sollevamenti, onda. Restano dissolvenze brevi. */
 @media (prefers-reduced-motion: reduce) {
-    .card-inner {
+    .card,
+    .card-inner,
+    .card.flip .card-inner,
+    .card.matched .card-inner,
+    .card:not(.flip):hover .card-inner,
+    .card:active:not(.flip) {
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .card-front,
+    .card-back {
+        transform: none;
+        transition: opacity 120ms linear, background-color 120ms linear, box-shadow 120ms linear;
+    }
+
+    .card-back {
+        opacity: 0;
+    }
+
+    .card.flip .card-back {
+        opacity: 1;
+        box-shadow: inset 0 0 0 1.5px var(--faccia-bordo), 0 10px 20px var(--ombra);
+    }
+
+    .card.flip .card-front {
+        opacity: 0;
+    }
+
+    .card.matched .card-back,
+    .card.matched .figure path,
+    .card.matched .card-ring rect,
+    .card.matched .badge-ok {
+        transition: opacity 120ms linear, background-color 120ms linear, stroke 120ms linear, stroke-dashoffset 0s, transform 0s;
+        transition-delay: 0s;
+    }
+
+    .card.wrong,
+    .board.wave .card {
+        animation: none;
+    }
+
+    .card-dot {
         transition: none;
+    }
+
+    .veil,
+    .win {
+        animation: fade-in 160ms linear both;
+    }
+
+    .record-tag.pop,
+    .record-tag.pop::after {
+        animation: none;
     }
 }

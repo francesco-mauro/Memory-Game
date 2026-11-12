@@ -3,31 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Il classico gioco del Memory in JavaScript: trova tutte le coppie con meno mosse possibile.">
+    <meta name="description" content="Il classico gioco del Memory in JavaScript: trova le dieci coppie con meno mosse possibile.">
+    <meta name="color-scheme" content="dark light">
     <title>Memory-Game</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='6' fill='%232e3d49'/%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='7' fill='%232A3042' stroke='%235C6690' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3.5' fill='%23C5F06A'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@600;700&display=swap">
     <link rel="stylesheet" href="style/style.css">
 </head>
 <body>
-    <h1>Gioco del Memory</h1>
+    <header class="topbar">
+        <h1>Memory</h1>
+        <dl class="stats">
+            <div class="stat">
+                <dt>Mosse</dt>
+                <dd><span class="stat-value" id="move-counter">0</span></dd>
+            </div>
+            <div class="stat">
+                <dt>Tempo</dt>
+                <dd><span class="stat-value" id="timer">0</span><span class="stat-unit">s</span></dd>
+            </div>
+            <div class="stat">
+                <dt>Record</dt>
+                <dd><span class="stat-value" id="record">–</span><span class="stat-unit" id="record-unit"></span></dd>
+            </div>
+        </dl>
+        <button type="button" class="button" id="restart">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Ricomincia
+        </button>
+    </header>
 
-    <div class="stats">
-        <p>Mosse: <span id="move-counter">0</span></p>
-        <p>Tempo: <span id="timer">0</span> secondi</p>
-        <p>Record: <span id="record">nessuno</span></p>
-        <button type="button" id="restart">Ricomincia</button>
-    </div>
-
-    <div id="game-board" role="group" aria-label="Tabellone"></div>
+    <main id="game-board" class="board" aria-label="Tabellone"></main>
 
     <p id="announcer" class="visually-hidden" aria-live="polite"></p>
 
-    <div id="win-message" hidden>
-        <h2>Complimenti! Hai completato il gioco.</h2>
-        <p>Tempo impiegato: <span id="final-time"></span> secondi</p>
-        <p>Mosse effettuate: <span id="final-moves"></span></p>
-        <p id="new-record" hidden>Nuovo record!</p>
-        <button type="button" id="play-again">Gioca ancora</button>
+    <div class="veil" id="win-message" hidden>
+        <section class="win" role="dialog" aria-modal="true" aria-labelledby="win-title">
+            <div class="win-heading">
+                <span class="label">Partita finita</span>
+                <h2 id="win-title">Venti carte, dieci coppie. Fatto.</h2>
+            </div>
+            <dl class="win-stats">
+                <div class="win-stat">
+                    <dt>Tempo</dt>
+                    <dd><span class="win-value" id="final-time">0</span><span class="stat-unit">s</span></dd>
+                </div>
+                <div class="win-stat" id="moves-box">
+                    <dt>Mosse</dt>
+                    <dd><span class="win-value" id="final-moves">0</span></dd>
+                    <span class="record-tag" id="new-record" hidden>
+                        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.2 4.8 9 10 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Nuovo record
+                    </span>
+                </div>
+            </dl>
+            <p class="win-note" id="record-note"></p>
+            <button type="button" class="button button-wide" id="play-again">Gioca ancora</button>
+        </section>
     </div>
 
     <script src="script/logic.js"></script>

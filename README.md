@@ -22,11 +22,19 @@ Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte l
 - Ricomincia a metà partita annulla anche il timer e le carte che stanno per rigirarsi.
 - Chi ha chiesto meno animazioni al sistema vede le carte girarsi senza la rotazione.
 
+## La grafica del 2026
+
+Lo stile si chiama Notturno: tela scura, carte avorio che si sollevano quando le giri, dieci figure disegnate a tratto al posto dei numeri. Una coppia trovata passa in negativo, con un bordo lime che si disegna attorno alla carta e un bollino con la spunta. Una coppia sbagliata si riconosce dal contorno corallo e da una piccola scossa, poi le carte si richiudono; se clicchi un'altra carta nel frattempo, si chiudono subito. A fine partita un'onda attraversa il tabellone e i numeri contano fino al risultato.
+
+- I colori sono variabili CSS: il tema scuro è quello predefinito, chi usa il tema chiaro ne ha una versione propria.
+- Le animazioni muovono solo `transform` e `opacity`, più il colore della faccia. Con il movimento ridotto restano solo dissolvenze brevi.
+- Una carta girata e una carta trovata si distinguono anche in bianco e nero, non solo dal colore.
+
 ## Strumenti
 
-HTML, CSS, JavaScript. Test con il test runner di Node.
+HTML, CSS, JavaScript. Test con il test runner di Node. Caratteri Unbounded e Manrope da Google Fonts, licenza SIL Open Font License.
 
-Claude Code, come assistente per le migliorie del 2026 e per questo README.
+Claude Design per la grafica, Claude Code come assistente per le migliorie del 2026 e per questo README.
 
 ## Come provarlo
 
@@ -45,7 +53,7 @@ node --test
 ## Com'è fatto
 
 - `index.html`: la pagina, con contatori, record e messaggio di vittoria.
-- `script/logic.js`: la logica pura, cioè mazzo, mescolamento e confronto dei record. La usano sia la pagina sia i test.
-- `script/script.js`: gestione dei clic e della tastiera, confronto delle coppie, timer, record e riavvio.
-- `style/style.css`: lo stile del tabellone e delle carte, con la griglia per il telefono.
+- `script/logic.js`: la logica pura, cioè mazzo, mescolamento, record e le dieci figure. La usano sia la pagina sia i test.
+- `script/script.js`: gestione dei clic e della tastiera, confronto delle coppie, animazioni di fine partita, timer, record e riavvio.
+- `style/style.css`: lo stile Notturno, con il tema chiaro, la griglia per il telefono e il movimento ridotto.
 - `tests/logic.test.js`: i test di `logic.js`.

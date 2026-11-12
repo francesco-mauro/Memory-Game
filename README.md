@@ -27,7 +27,7 @@ Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte l
 Lo stile si chiama Notturno: tela scura, carte avorio che si sollevano quando le giri, dieci figure disegnate a tratto al posto dei numeri. Una coppia trovata passa in negativo, con un bordo lime che si disegna attorno alla carta e un bollino con la spunta. Una coppia sbagliata si riconosce dal contorno corallo e da una piccola scossa, poi le carte si richiudono; se clicchi un'altra carta nel frattempo, si chiudono subito. A fine partita un'onda attraversa il tabellone e i numeri contano fino al risultato.
 
 - I colori sono variabili CSS: il tema scuro è quello predefinito, chi usa il tema chiaro ne ha una versione propria.
-- Le animazioni muovono solo `transform` e `opacity`, più il colore della faccia. Con il movimento ridotto restano solo dissolvenze brevi.
+- Le animazioni non ricalcolano mai la disposizione della pagina: si muovono trasformazioni, opacità, colori e ombre. Con il movimento ridotto restano solo dissolvenze brevi.
 - Una carta girata e una carta trovata si distinguono anche in bianco e nero, non solo dal colore.
 
 ## Strumenti

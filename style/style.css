@@ -219,7 +219,8 @@ h1 {
     position: absolute;
     inset: 0;
     transform-style: preserve-3d;
-    transition: transform 440ms var(--curva-giro);
+    /* quando si richiude: senza rimbalzo */
+    transition: transform 360ms var(--curva-piana);
 }
 
 .card-front,
@@ -300,6 +301,13 @@ h1 {
     }
 }
 
+/* Nel tema chiaro il bordo con il mouse sopra è più scuro e più spesso */
+@media (hover: hover) and (prefers-color-scheme: light) {
+    .card:not(.flip):hover .card-front {
+        border-width: 2.5px;
+    }
+}
+
 /* Girata: si solleva e ruota */
 .card.flip {
     cursor: default;
@@ -307,6 +315,7 @@ h1 {
 
 .card.flip .card-inner {
     transform: translateY(-6px) rotateY(180deg);
+    transition: transform 440ms var(--curva-giro);
 }
 
 .card.flip .card-back {
@@ -657,6 +666,15 @@ h1 {
         box-shadow: inset 0 0 0 1.5px var(--faccia-bordo), 0 10px 20px var(--ombra);
     }
 
+    /* la trovata si appoggia e perde l'ombra anche qui */
+    .card.matched .card-inner {
+        transform: rotateY(180deg);
+    }
+
+    .card.matched .card-back {
+        box-shadow: none;
+    }
+
     .figure {
         width: 54%;
     }
@@ -732,6 +750,10 @@ h1 {
 
     .card.flip .card-front {
         opacity: 0;
+    }
+
+    .card.matched .card-back {
+        box-shadow: none;
     }
 
     .card.matched .card-back,

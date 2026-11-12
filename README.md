@@ -16,6 +16,8 @@ Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte l
 
 HTML, CSS, JavaScript.
 
+Claude Code, come assistente per questo README.
+
 ## Come provarlo
 
 Scarica il repository e apri `index.html` nel browser.

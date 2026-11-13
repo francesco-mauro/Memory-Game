@@ -1,8 +1,7 @@
 // Il gioco nella pagina. La logica pura (mazzo, mescolamento, record, figure) sta in logic.js.
 // Contenuti: stato e avvio, creazione delle carte, giro di una carta, coppia trovata e sbagliata,
-// fine partita (onda, messaggio, numeri che contano), riavvio, frecce della tastiera, record nel browser.
-const PAIRS = 10;
-const RECORD_KEY = 'memory-game-record';
+// fine partita (onda, messaggio, numeri che contano), riavvio, livelli, frecce della tastiera, record nel browser.
+const LEVEL_KEY = 'memory-game-level';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const gameBoard = document.getElementById('game-board');
@@ -14,8 +13,10 @@ const recordUnit = document.getElementById('record-unit');
 const announcer = document.getElementById('announcer');
 const winMessage = document.getElementById('win-message');
 const playAgain = document.getElementById('play-again');
+const levelButtons = document.querySelectorAll('.level');
 
-let cardValues = createDeck(PAIRS);
+let level = parseLevel(readStored(LEVEL_KEY));
+let cardValues = createDeck(LEVELS[level].pairs);
 let firstCard = null;
 let secondCard = null;
 let wrongPair = null;
@@ -23,14 +24,16 @@ let wrongTimers = [];
 let moves = 0;
 let seconds = 0;
 let timerInterval = null;
+let startMs = 0;
 let countFrame = null;
 const timers = new Set();
 
 document.getElementById('restart').addEventListener('click', restartGame);
 playAgain.addEventListener('click', restartGame);
 gameBoard.addEventListener('keydown', moveFocusWithArrows);
+levelButtons.forEach(button => button.addEventListener('click', () => changeLevel(button.dataset.level)));
 
-gameBoard.setAttribute('aria-label', `Tabellone, ${cardValues.length} carte`);
+showLevel();
 showRecord();
 shuffle(cardValues);
 createCards();
@@ -122,11 +125,15 @@ function setCardLabel(card, state) {
     card.setAttribute('aria-label', `Carta ${Number(card.dataset.index) + 1}, ${state}`);
 }
 
+// Il timer legge l'orologio a ogni battito: se i battiti rallentano, il tempo resta giusto.
 function startTimer() {
-    timerInterval = setInterval(() => {
-        seconds++;
-        timerDisplay.textContent = seconds;
-    }, 1000);
+    startMs = Date.now();
+    timerInterval = setInterval(updateSeconds, 250);
+}
+
+function updateSeconds() {
+    seconds = elapsedSeconds(startMs, Date.now());
+    timerDisplay.textContent = seconds;
 }
 
 function flipCard() {
@@ -177,6 +184,7 @@ function pairFound() {
     }, reducedMotion() ? 0 : 440);
 
     if (gameBoard.querySelectorAll('.card:not([data-matched])').length === 0) {
+        updateSeconds();
         clearInterval(timerInterval);
         schedule(endGame, reducedMotion() ? 120 : 1060);
     }
@@ -229,6 +237,7 @@ function endGame() {
     const finalTime = document.getElementById('final-time');
     const finalMoves = document.getElementById('final-moves');
     const tag = document.getElementById('new-record');
+    document.getElementById('win-title').textContent = LEVELS[level].title;
     document.getElementById('moves-box').classList.toggle('is-record', isRecord);
     document.getElementById('record-note').textContent = recordNote(result, previous);
     tag.hidden = true;
@@ -257,7 +266,7 @@ function endGame() {
         }, 1360);
     }
 
-    announce(`Partita finita in ${moves} mosse e ${seconds} secondi${isRecord ? ', nuovo record' : ''}`);
+    announce(`Partita finita in ${moves} mosse e ${seconds} secondi${isRecord ? ', nuovo record del livello ' + level : ''}`);
 }
 
 // L'onda: ogni carta si gonfia un attimo, con un ritardo che cresce lungo la diagonale.
@@ -285,7 +294,7 @@ function countUp(pairs, duration) {
     countFrame = requestAnimationFrame(step);
 }
 
-function restartGame() {
+function restartGame(message = 'Nuova partita') {
     // Da «Gioca ancora» il focus finirebbe nel vuoto: lo portiamo sulla prima carta.
     const focusWasInWinMessage = winMessage.contains(document.activeElement);
     clearInterval(timerInterval);
@@ -307,10 +316,28 @@ function restartGame() {
 
     gameBoard.replaceChildren();
 
+    cardValues = createDeck(LEVELS[level].pairs);
     shuffle(cardValues);
     createCards();
     if (focusWasInWinMessage) gameBoard.querySelector('.card').focus();
-    announce('Nuova partita');
+    announce(typeof message === 'string' ? message : 'Nuova partita');
+}
+
+// Cambiare livello fa ripartire la partita, con il record di quel livello.
+function changeLevel(name) {
+    const next = parseLevel(name);
+    if (next === level) return;
+    level = next;
+    writeStored(LEVEL_KEY, level);
+    showLevel();
+    showRecord();
+    restartGame(`Livello ${level}, ${LEVELS[level].pairs * 2} carte`);
+}
+
+function showLevel() {
+    levelButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.level === level)));
+    gameBoard.dataset.level = level;
+    gameBoard.setAttribute('aria-label', `Tabellone, ${LEVELS[level].pairs * 2} carte`);
 }
 
 // Frecce della tastiera: spostano il focus tra le carte, riga per riga.
@@ -335,21 +362,29 @@ function announce(text) {
     announcer.textContent = text;
 }
 
-// Il record resta nel browser di chi gioca. Se il browser non lo permette, il gioco va lo stesso.
-function readRecord() {
+// Record e livello restano nel browser di chi gioca. Se il browser non lo permette, il gioco va lo stesso.
+function readStored(key) {
     try {
-        return parseRecord(localStorage.getItem(RECORD_KEY));
+        return localStorage.getItem(key);
     } catch {
         return null;
     }
 }
 
-function saveRecord(record) {
+function writeStored(key, value) {
     try {
-        localStorage.setItem(RECORD_KEY, JSON.stringify(record));
+        localStorage.setItem(key, value);
     } catch {
-        // niente record, la partita resta valida
+        // niente salvataggio, la partita resta valida
     }
+}
+
+function readRecord() {
+    return parseRecord(readStored(LEVELS[level].recordKey));
+}
+
+function saveRecord(record) {
+    writeStored(LEVELS[level].recordKey, JSON.stringify(record));
 }
 
 function showRecord() {

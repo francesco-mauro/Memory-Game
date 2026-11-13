@@ -44,7 +44,26 @@ function recordNote(result, previous) {
     return isBetterRecord(result, previous) ? `Il record precedente era ${old}.` : `Il tuo record resta ${old}.`;
 }
 
-// Le 10 figure delle carte: tracciati SVG su un riquadro 48×48, disegnati a tratto.
+// I livelli: quante coppie, e come si chiama il risultato nel messaggio di fine partita.
+// Normale tiene la chiave del record di prima, così chi aveva già un record non lo perde.
+const LEVELS = {
+    facile: { pairs: 6, title: 'Dodici carte, sei coppie. Fatto.', recordKey: 'memory-game-record-facile' },
+    normale: { pairs: 10, title: 'Venti carte, dieci coppie. Fatto.', recordKey: 'memory-game-record' },
+    difficile: { pairs: 15, title: 'Trenta carte, quindici coppie. Fatto.', recordKey: 'memory-game-record-difficile' },
+};
+
+// Il livello salvato vale solo se esiste; altrimenti si gioca a Normale.
+function parseLevel(text) {
+    return Object.prototype.hasOwnProperty.call(LEVELS, text) ? text : 'normale';
+}
+
+// I secondi di gioco contati dall'orologio, non dai battiti del timer:
+// se la scheda resta nascosta il browser rallenta i timer, l'orologio no.
+function elapsedSeconds(startMs, nowMs) {
+    return Math.max(0, Math.floor((nowMs - startMs) / 1000));
+}
+
+// Le 15 figure delle carte: tracciati SVG su un riquadro 48×48, disegnati a tratto.
 // tone 'a' = inchiostro, 'b' = corallo; stroke = spessore del tratto; rotate = gradi attorno al centro.
 const FIGURES = [
     { name: 'cerchio', tone: 'b', stroke: 4, path: 'M9 24a15 15 0 1 0 30 0a15 15 0 1 0 -30 0' },
@@ -57,8 +76,14 @@ const FIGURES = [
     { name: 'tre punti', tone: 'a', stroke: 3.5, path: 'M7 36a5 5 0 1 0 10 0a5 5 0 1 0 -10 0M19 24a5 5 0 1 0 10 0a5 5 0 1 0 -10 0M31 12a5 5 0 1 0 10 0a5 5 0 1 0 -10 0' },
     { name: 'zigzag', tone: 'b', stroke: 4, path: 'M5 31 14 17 24 31 34 17 43 31' },
     { name: 'foglia', tone: 'a', stroke: 4, rotate: 45, path: 'M24 6C35 15.5 35 32.5 24 42 13 32.5 13 15.5 24 6Z' },
+    // le cinque del livello Difficile
+    { name: 'quadrato', tone: 'b', stroke: 4, path: 'M11 11h26v26H11Z' },
+    { name: 'luna', tone: 'a', stroke: 4, path: 'M30 7a17 17 0 1 0 11 29A14 14 0 0 1 30 7Z' },
+    { name: 'esagono', tone: 'b', stroke: 4, path: 'M24 7 38.7 15.5V32.5L24 41 9.3 32.5V15.5Z' },
+    { name: 'cuore', tone: 'a', stroke: 4, path: 'M24 40C10 30 6 22 6 16a9 9 0 0 1 18-2 9 9 0 0 1 18 2c0 6-4 14-18 24Z' },
+    { name: 'freccia', tone: 'b', stroke: 4.5, path: 'M8 24h30M27 13l11 11-11 11' },
 ];
 
 if (typeof module !== 'undefined') {
-    module.exports = { createDeck, shuffle, isBetterRecord, parseRecord, recordNote, FIGURES };
+    module.exports = { createDeck, shuffle, isBetterRecord, parseRecord, recordNote, FIGURES, LEVELS, parseLevel, elapsedSeconds };
 }

@@ -32,7 +32,7 @@ Lo stile si chiama Notturno: tela scura, carte avorio che si sollevano quando le
 
 ## Strumenti
 
-HTML, CSS, JavaScript. Test con il test runner di Node. Caratteri Unbounded e Manrope da Google Fonts, licenza SIL Open Font License.
+HTML, CSS, JavaScript. Test con il test runner di Node. Caratteri Unbounded e Manrope, licenza SIL Open Font License: stanno nella cartella `fonts/` con le loro licenze, così la pagina non si collega a servizi esterni.
 
 Claude Design per la grafica, Claude Code come assistente per le migliorie del 2026 e per questo README.
 
@@ -57,3 +57,4 @@ node --test
 - `script/script.js`: gestione dei clic e della tastiera, confronto delle coppie, animazioni di fine partita, timer, record e riavvio.
 - `style/style.css`: lo stile Notturno, con il tema chiaro, la griglia per il telefono e il movimento ridotto.
 - `tests/logic.test.js`: i test di `logic.js`.
+- `fonts/`: i due caratteri in formato woff2, solo l'alfabeto latino, e le loro licenze.

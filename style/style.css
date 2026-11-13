@@ -1,6 +1,7 @@
 /*
  * Memory, stile «Notturno» (novembre 2026).
  * Contenuti:
+ * - caratteri Manrope e Unbounded, serviti dalla cartella fonts/ (licenza OFL)
  * - variabili di colore: tema scuro predefinito, tema chiaro con prefers-color-scheme
  * - pagina, barra in alto, contatori e pulsanti
  * - tabellone e carta: dorso, faccia, figure, mouse sopra, focus
@@ -9,6 +10,23 @@
  * - telefono (fino a 480 px)
  * - movimento ridotto
  */
+
+/* Font variabili, solo l'alfabeto latino: bastano per l'italiano */
+@font-face {
+    font-family: 'Manrope';
+    font-style: normal;
+    font-weight: 500 800;
+    font-display: swap;
+    src: url('../fonts/manrope-latin.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Unbounded';
+    font-style: normal;
+    font-weight: 600 700;
+    font-display: swap;
+    src: url('../fonts/unbounded-latin.woff2') format('woff2');
+}
 
 :root {
     --fondo: #111318;

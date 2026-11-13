@@ -29,6 +29,15 @@ Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte l
 - Sugli schermi bassi il tabellone si stringe quanto basta per stare tutto in vista.
 - Il link condiviso mostra un'anteprima con il tabellone.
 
+## Lighthouse
+
+Misurato sulla demo online il 13 novembre 2026, con Lighthouse 12.
+
+| | Prestazioni | Accessibilità | Buone pratiche | SEO |
+|---|---|---|---|---|
+| Telefono | 100 | 100 | 100 | 100 |
+| Computer | 100 | 100 | 100 | 100 |
+
 ## La grafica del 2026
 
 Lo stile si chiama Notturno: tela scura, carte avorio che si sollevano quando le giri, dieci figure disegnate a tratto al posto dei numeri. Una coppia trovata passa in negativo, con un bordo lime che si disegna attorno alla carta e un bollino con la spunta. Una coppia sbagliata si riconosce dal contorno corallo e da una piccola scossa, poi le carte si richiudono; se clicchi un'altra carta nel frattempo, si chiudono subito. A fine partita un'onda attraversa il tabellone e i numeri contano fino al risultato.

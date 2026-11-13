@@ -2,15 +2,18 @@
 
 **Prova la demo:** https://francesco-mauro.github.io/Memory-Game/
 
+![Una partita: una coppia sbagliata, le coppie trovate, il messaggio di fine partita](images/demo.gif)
+
 Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte le coppie di carte uguali nel minor tempo e con meno mosse possibile. Fatto a ottobre 2024, ripreso a novembre 2026.
 
 ## Cosa fa
 
+- **Tre livelli:** Facile con 12 carte, Normale con 20, Difficile con 30. Il livello scelto resta per la volta dopo.
 - **Tabellone dinamico:** le carte vengono mescolate e create da JavaScript a ogni partita.
 - **Timer:** parte al primo clic e conta i secondi.
 - **Contatore delle mosse.**
 - **Messaggio di vittoria** con tempo impiegato e mosse fatte.
-- **Record:** la partita migliore (meno mosse, a parità di mosse meno tempo) resta salvata nel browser.
+- **Record per livello:** la partita migliore (meno mosse, a parità di mosse meno tempo) resta salvata nel browser.
 - **Ricomincia:** sempre a portata di mano, anche a metà partita.
 - **Si gioca anche con la tastiera:** Tab e frecce per spostarsi tra le carte, Invio o spazio per girarle.
 
@@ -21,6 +24,10 @@ Il classico Memory in JavaScript, senza librerie. L'obiettivo è trovare tutte l
 - Le carte sono pulsanti, quindi si raggiungono con la tastiera, e un lettore di schermo annuncia le carte girate, le coppie trovate e la vittoria.
 - Ricomincia a metà partita annulla anche il timer e le carte che stanno per rigirarsi.
 - Chi ha chiesto meno animazioni al sistema vede le carte girarsi senza la rotazione.
+- Il timer legge l'orologio invece di contare i battiti: se la scheda resta in secondo piano il browser rallenta i battiti, ma il tempo resta giusto.
+- Una carta coperta nasconde la figura anche nei browser che non gestiscono il retro delle rotazioni 3D.
+- Sugli schermi bassi il tabellone si stringe quanto basta per stare tutto in vista.
+- Il link condiviso mostra un'anteprima con il tabellone.
 
 ## La grafica del 2026
 
@@ -58,3 +65,4 @@ node --test
 - `style/style.css`: lo stile Notturno, con il tema chiaro, la griglia per il telefono e il movimento ridotto.
 - `tests/logic.test.js`: i test di `logic.js`.
 - `fonts/`: i due caratteri in formato woff2, solo l'alfabeto latino, e le loro licenze.
+- `images/`: la gif di questo README e l'immagine dell'anteprima.
